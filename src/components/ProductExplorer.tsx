@@ -1,3 +1,4 @@
+// คอมโพเนนต์สำหรับแสดงรายการสินค้า
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,7 +12,7 @@ import type {
 import ProductSearchForm from "./ProductSearchForm";
 import ProductForm from "./ProductForm";
 
-type LoadState = "loading" | "error" | "ready";
+type LoadState = "loading" | "error" | "ready"; // สรา้ง type เพื่อจำกัด สถานะการดึงข้อมูลจะเป็นไปได้แค่ 3 อย่างเท่านั้น
 
 export default function ProductExplorer() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -19,6 +20,7 @@ export default function ProductExplorer() {
   const [status, setStatus] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [editing, setEditing] = useState<Product | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Product | null>(null);
 
   function showResult(list: ProductList) {
     setProducts(list.products);
@@ -47,17 +49,20 @@ export default function ProductExplorer() {
     if (editing) {
       setProducts(
         products.map((item) =>
-          item.id === editing.id ? { ...draft, id: editing.id } : item,
+          item.id === editing.id
+            ? { ...draft, id: editing.id, thumbnail: editing.thumbnail }
+            : item,
         ),
       );
       setEditing(null);
       return;
     }
-    setProducts([...products, { ...draft, id: Date.now() }]);
+    setProducts([...products, { ...draft, id: Date.now() }]); // ใช้ Date.now() เป็น id ชั่วคราวสำหรับสินค้าใหม่
   }
 
   function removeProduct(id: number) {
     setProducts(products.filter((item) => item.id !== id));
+    setPendingDelete(null);
 
     if (editing?.id === id) {
       setEditing(null);
@@ -79,7 +84,7 @@ export default function ProductExplorer() {
         onClick={() => loadProducts(defaultQuery)}
         disabled={status === "loading"}
       >
-        {status === "loading" ? "กำลังโหลด" : "โหลดข้อมูล"}
+        {status === "loading" ? "กำลังโหลด" : "คืนค่าเริ่มต้น"}
       </button>
 
       {/* ส่วนแสดงผล เขียนเพิ่มในหัวข้อ 1.7 */}
@@ -128,12 +133,31 @@ export default function ProductExplorer() {
                     <button type="button" onClick={() => setEditing(item)}>
                       แก้ไข
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => removeProduct(item.id)}
-                    >
-                      ลบ
-                    </button>
+                    {pendingDelete?.id === item.id ? (
+                      <span className="delete-confirmation" role="group">
+                        <button
+                          type="button"
+                          className="confirm-delete"
+                          onClick={() => removeProduct(item.id)}
+                        >
+                          ยืนยันการลบ
+                        </button>
+                        <button
+                          type="button"
+                          className="cancel-delete"
+                          onClick={() => setPendingDelete(null)}
+                        >
+                          ยกเลิก
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPendingDelete(item)}
+                      >
+                        ลบ
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

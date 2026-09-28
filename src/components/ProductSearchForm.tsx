@@ -1,3 +1,4 @@
+// คอมโพเนนต์สำหรับฟอร์มค้นหาสินค้า
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -24,7 +25,7 @@ export default function ProductSearchForm({
   return (
     <form onSubmit={handleSubmit(onSearch)} noValidate>
       <label htmlFor="q">คำค้น</label>
-      <input id="q" {...register("q")} placeholder="phone" />
+      <input id="q" {...register("q")} placeholder="กรุณากรอกรายละเอียดสินค้า" />
 
       <label htmlFor="limit">จำนวนรายการ</label>
       <input

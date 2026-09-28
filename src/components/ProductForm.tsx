@@ -1,6 +1,7 @@
+// ฟอร์มสำหรับเพิ่มหรือแก้ไขสินค้า
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CATEGORIES, ProductDraftSchema } from "@/lib/products";
@@ -17,6 +18,7 @@ export default function ProductForm({
   onSave,
   onCancel,
 }: ProductFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const {
     register,
     handleSubmit,
@@ -33,10 +35,19 @@ export default function ProductForm({
           stock: editing.stock,
           category: editing.category,
         }
-      : { title: "", price: undefined, stock: undefined },
+      : {
+          title: "",
+          price: undefined,
+          stock: undefined,
+          category: "" as ProductDraft["category"],
+        },
   });
 
   useEffect(() => {
+    if (editing) {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     reset(
       editing
         ? {
@@ -45,17 +56,31 @@ export default function ProductForm({
             stock: editing.stock,
             category: editing.category,
           }
-        : { title: "", price: undefined, stock: undefined },
+        : {
+            title: "",
+            price: undefined,
+            stock: undefined,
+            category: "" as ProductDraft["category"],
+          },
     );
   }, [editing, reset]);
 
+  function clearForm() {
+    reset({
+      title: "",
+      price: null as unknown as ProductDraft["price"],
+      stock: null as unknown as ProductDraft["stock"],
+      category: "" as ProductDraft["category"],
+    });
+  }
+
   function saveProduct(values: ProductDraft) {
     onSave(values);
-    reset();
+    clearForm();
   }
 
   return (
-    <form onSubmit={handleSubmit(saveProduct)} noValidate>
+    <form ref={formRef} onSubmit={handleSubmit(saveProduct)} noValidate>
       <label htmlFor="title">ชื่อสินค้า</label>
       <input
         id="title"
@@ -126,7 +151,13 @@ export default function ProductForm({
       </button>
 
       {editing && (
-        <button type="button" onClick={onCancel}>
+        <button
+          type="button"
+          onClick={() => {
+            clearForm();
+            onCancel();
+          }}
+        >
           ยกเลิก
         </button>
       )}

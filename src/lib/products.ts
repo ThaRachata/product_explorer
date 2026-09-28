@@ -22,7 +22,7 @@ export const ProductSchema = z.object({
         .int("จำนวนคงเหลือต้องเป็นจำนวนเต็ม")
         .min(0, "จำนวนคงเหลือต้องไม่ติดลบ"),
     category: z.enum(CATEGORIES, { error: "กรุณาเลือกหมวดหมู่" }),
-    description: z.string().trim().optional(),
+    description: z.string().trim().optional(), // .optional() ไม่บังคับให้กรอก
     thumbnail: z.string().url("กรุณากรอก URL ของรูปภาพ").optional(),
 });
 
@@ -37,20 +37,14 @@ export const ProductListSchema = z.object({
 export type Product     = z.infer<typeof ProductSchema>;  // ใช้ตอนที่ดึงข้อมูลสินค้าแต่ละรายการ
 export type ProductList = z.infer<typeof ProductListSchema>;
 
-export const ProductDraftSchema = ProductSchema.omit({ id: true });
+export const ProductDraftSchema = ProductSchema.omit({ id: true }); // .omit เป็นการสร้าง Schema ใหม่โดยตัดฟิลด์ที่ไม่ต้องการออก
 export type ProductDraft = z.infer<typeof ProductDraftSchema>; // ใช้ตอนที่สร้างสินค้าใหม่ (ยังไม่มี id)
 
 
 
 const API_BASE = "https://dummyjson.com";
 
-export const SORT_FIELDS = ["title", "price", "stock"] as const;0.
-
-// export type SearchQuery = {
-//     q: string;
-//     limit: number;
-//     sortBy: (typeof SORT_FIELDS)[number];
-// };
+export const SORT_FIELDS = ["title", "price", "stock"] as const;
 
 
 export const defaultQuery: SearchQuery = {
@@ -59,6 +53,7 @@ export const defaultQuery: SearchQuery = {
     sortBy: "title",
 };
 
+// รับค่าการค้นหาจากผู้ใช้ แล้วสร้าง URL สำหรับเรียก API ของ DummyJSON
 export function buildProductUrl(query: SearchQuery): string {
     const params = new URLSearchParams();
     params.set("q", query.q);
